@@ -3987,7 +3987,8 @@ GHC_INLINE bool copy_file(const path& from, const path& to, copy_options options
     }
     ssize_t br, bw;
     while (true) {
-        do { br = ::read(in, buffer.data(), buffer.size()); } while(errno == EINTR);
+        // Retry only a failed read: after a stale EINTR a successful read would be read over and its bytes lost.
+        do { errno = 0; br = ::read(in, buffer.data(), buffer.size()); } while(br < 0 && errno == EINTR);
         if(!br) {
             break;
         }
@@ -5704,7 +5705,8 @@ public:
         , _entry(nullptr)
     {
         if (!path.empty()) {
-            do { _dir = ::opendir(path.native().c_str()); } while(errno == EINTR);
+            // Retry only a failed call: a stale EINTR left in errno would reopen forever and leak a handle per pass.
+            do { errno = 0; _dir = ::opendir(path.native().c_str()); } while(!_dir && errno == EINTR);
             if (!_dir) {
                 auto error = errno;
                 _base = filesystem::path();
@@ -5730,8 +5732,7 @@ public:
             bool skip;
             do {
                 skip = false;
-                errno = 0;
-                do { _entry = ::readdir(_dir); } while(errno == EINTR);
+                do { errno = 0; _entry = ::readdir(_dir); } while(!_entry && errno == EINTR);
                 if (_entry) {
                     _dir_entry._path = _base;
                     _dir_entry._path.append_name(_entry->d_name);
