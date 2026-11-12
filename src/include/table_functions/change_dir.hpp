@@ -65,7 +65,7 @@ namespace duckdb {
     }
 
     static unique_ptr<FunctionData> ChangeDirBind(ClientContext &context, TableFunctionBindInput &input,
-                                                  vector<LogicalType> &return_types, vector<string> &names) {
+                                                  vector<LogicalType> &return_types, vector<Identifier> &names) {
         names.emplace_back("current_directory");
         return_types.emplace_back(LogicalType::VARCHAR);
 

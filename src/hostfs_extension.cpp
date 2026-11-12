@@ -62,6 +62,7 @@ namespace duckdb {
         loader.RegisterFunction(hostfs_scalar_function);
 
         auto hostfs_pwd_function = ScalarFunction("pwd", {}, LogicalType::VARCHAR, PrintWorkingDirectoryFun);
+        hostfs_pwd_function.SetFallible();
         loader.RegisterFunction(hostfs_pwd_function);
 
 
@@ -85,53 +86,62 @@ namespace duckdb {
 
         auto hostfs_is_file_function = ScalarFunction("is_file", {LogicalType::VARCHAR}, LogicalType::BOOLEAN,
                                                       IsFileScalarFun);
+        hostfs_is_file_function.SetFallible();
         loader.RegisterFunction(hostfs_is_file_function);
 
         auto hostfs_is_dir_function = ScalarFunction("is_dir", {LogicalType::VARCHAR}, LogicalType::BOOLEAN,
                                                      IsDirectoryScalarFun);
+        hostfs_is_dir_function.SetFallible();
         loader.RegisterFunction(hostfs_is_dir_function);
 
         auto hostfs_get_filename_function = ScalarFunction("file_name", {LogicalType::VARCHAR}, LogicalType::VARCHAR,
                                                            GetFilenameScalarFun);
+        hostfs_get_filename_function.SetFallible();
         loader.RegisterFunction(hostfs_get_filename_function);
 
 
         auto hostfs_get_file_extension_function = ScalarFunction("file_extension", {LogicalType::VARCHAR},
                                                                  LogicalType::VARCHAR,
                                                                  GetFileExtensionScalarFun);
+        hostfs_get_file_extension_function.SetFallible();
         loader.RegisterFunction(hostfs_get_file_extension_function);
 
 
         auto hostfs_get_file_size_function = ScalarFunction("file_size", {LogicalType::VARCHAR}, LogicalType::UBIGINT,
                                                             GetFileSizeScalarFun);
+        hostfs_get_file_size_function.SetFallible();
         loader.RegisterFunction(hostfs_get_file_size_function);
 
 
         auto hostfs_get_path_absolute_function = ScalarFunction("absolute_path", {LogicalType::VARCHAR},
                                                                 LogicalType::VARCHAR,
                                                                 GetPathAbsoluteScalarFun);
+        hostfs_get_path_absolute_function.SetFallible();
         loader.RegisterFunction(hostfs_get_path_absolute_function);
 
 
         auto hostfs_get_path_exists_function = ScalarFunction("path_exists", {LogicalType::VARCHAR},
                                                               LogicalType::BOOLEAN,
                                                               GetPathExistsScalarFun);
+        hostfs_get_path_exists_function.SetFallible();
         loader.RegisterFunction(hostfs_get_path_exists_function);
 
         auto hostfs_get_path_type_function = ScalarFunction("path_type", {LogicalType::VARCHAR}, LogicalType::VARCHAR,
                                                             GetPathTypeScalarFun);
+        hostfs_get_path_type_function.SetFallible();
         loader.RegisterFunction(hostfs_get_path_type_function);
 
         auto hostfs_last_modified_function = ScalarFunction("file_last_modified", {LogicalType::VARCHAR},
                                                             LogicalType::TIMESTAMP,
                                                             GetFileLastModifiedScalarFun);
-
+        hostfs_last_modified_function.SetFallible();
         loader.RegisterFunction(hostfs_last_modified_function);
 
         // Register table functions
         TableFunctionSet list_dir_set("ls");
 
-        TableFunction list_dir_default({}, ListDirRecursiveFun, ListDirBind, ListDirRecursiveState::Init);
+        TableFunction list_dir_default(vector<LogicalType>(), ListDirRecursiveFun, ListDirBind,
+                                       ListDirRecursiveState::Init);
         list_dir_set.AddFunction(list_dir_default);
 
         TableFunction list_dir_one_arg({LogicalType::VARCHAR}, ListDirRecursiveFun, ListDirBind,
@@ -147,7 +157,7 @@ namespace duckdb {
 
         TableFunctionSet list_dir_recursive_set("lsr");
 
-        TableFunction list_dir_recursive_default({}, ListDirRecursiveFun, ListDirRecursiveBind,
+        TableFunction list_dir_recursive_default(vector<LogicalType>(), ListDirRecursiveFun, ListDirRecursiveBind,
                                                  ListDirRecursiveState::Init);
         list_dir_recursive_set.AddFunction(list_dir_recursive_default);
 
