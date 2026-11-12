@@ -8,6 +8,7 @@
 
 #include <duckdb/parser/parsed_data/create_scalar_function_info.hpp>
 #include <duckdb/function/macro_function.hpp>
+#include "duckdb/catalog/default/default_functions.hpp"
 
 #include "third_party/filesystem.hpp"
 
@@ -72,12 +73,13 @@ namespace duckdb {
                                                              GetPathSeparatorScalarFun);
         loader.RegisterFunction(hostfs_path_separator_function);
 
-        // create split_path macro
-        Connection conn(instance);
-        // Execute the macro directly in the current context
-        const auto macro =
-                "CREATE MACRO path_split(path) AS list_filter(string_split(path, path_separator()), e -> len(e) > 0);";
-        auto query_result = conn.Query(macro);
+        // Registered through the loader, so a definition DuckDB rejects fails the load instead of vanishing.
+        // DuckDB 2.0 refuses the old `e -> ...` lambda arrow.
+        const DefaultMacro path_split_macro {
+                DEFAULT_SCHEMA, "path_split",
+                "(path) AS list_filter(string_split(path, path_separator()), lambda e: len(e) > 0)"};
+        auto path_split_info = DefaultFunctionGenerator::CreateInternalMacroInfo(path_split_macro);
+        loader.RegisterFunction(*path_split_info);
 
 
         auto hostfs_human_readable_size_function = ScalarFunction("hsize", {LogicalType::HUGEINT},
